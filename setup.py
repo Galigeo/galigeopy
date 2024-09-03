@@ -13,13 +13,13 @@ INSTALL_REQUIRES = [
 setuptools.setup(
     name=NAME,
     version=VERSION,
-    description="Streamlit Connection for Google Sheets.",
+    description="Galigeo Python SDK",
     url="https://github.com/JPTGGO/galigeopy",
     project_urls={
         "Source Code": "https://github.com/JPTGGO/galigeopy",
     },
     author="Jules Pierrat",
-    author_email="jpierrat@goodforest.fr",
+    author_email="jpierrat@galigeo.com",
     license="Apache License 2.0",
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -34,7 +34,7 @@ setuptools.setup(
     python_requires=">=3.8",
     # Requirements
     install_requires=INSTALL_REQUIRES,
-    packages=["galigeopy"],
+    packages=setuptools.find_packages(exclude=["tests"]),
     long_description=Path("README.md").read_text(),
     long_description_content_type="text/markdown",
 )
