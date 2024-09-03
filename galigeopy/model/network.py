@@ -84,3 +84,15 @@ class Network:
         else:
             raise Warning(f"Poi with code {code} not found in Network {self._name}")
         
+    def getAllPois(self)->list:
+        # Query
+        query = f"SELECT * FROM ggo_poi WHERE network_id = {self._network_id}"
+        gdf = gpd.read_postgis(query, self._engine, geom_col="geom")
+        # Data
+        pois = []
+        for i in range(len(gdf)):
+            data = gdf.iloc[i].to_dict()
+            data.update({"network": self})
+            pois.append(Poi(**data))
+        return pois
+        

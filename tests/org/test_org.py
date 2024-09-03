@@ -71,3 +71,12 @@ class TestOrg(unittest.TestCase):
         self.assertGreater(len(networks), 0)
         self.assertIsInstance(networks[0], Network)
         del org
+
+    def test_get_zone_types_list(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        # Get zone types list
+        df = org.getZoneTypesList()
+        self.assertIsNotNone(df)
+        self.assertGreater(len(df), 0)
+        del org

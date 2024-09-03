@@ -2,6 +2,7 @@ import unittest
 import json
 
 from galigeopy.org.org import Org
+from galigeopy.model.poi import Poi
 
 class TestNetwork(unittest.TestCase):
 
@@ -30,4 +31,12 @@ class TestNetwork(unittest.TestCase):
         self.assertIsNotNone(poi.x)
         self.assertIsNotNone(poi.y)
         self.assertEqual(poi.network_id, network.network_id)
+
+    def test_get_all_pois(self):
+        network = self.org.getNetworkById(self.conf["network_id"])
+        pois = network.getAllPois()
+        self.assertIsNotNone(pois)
+        self.assertGreater(len(pois), 0)
+        self.assertIsInstance(pois[0], Poi)
+        self.assertEqual(pois[0].network_id, network.network_id)
 

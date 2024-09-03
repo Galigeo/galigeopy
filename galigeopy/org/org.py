@@ -1,8 +1,9 @@
 # IMPORTS
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import create_engine, Engine, text
 import pandas as pd
 
 from galigeopy.model.network import Network
+from galigeopy.model.zone_type import ZoneType
 
 class Org:
     # Constructor
@@ -86,4 +87,38 @@ class Org:
             data.update({"org": self})
             networks.append(Network(**data))
         return networks
+    
+    def getZoneTypesList(self)->pd.DataFrame:
+        # Query
+        query = "SELECT * FROM ggo_zone_type"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # return df
+        return df
+    
+    def getZoneTypeById(self, id:int)->ZoneType:
+        # Query
+        query = f"SELECT * FROM ggo_zone_type WHERE zone_type_id = {str(id)}"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return ZoneType(**data)
+        else:
+            raise Warning(f"ZoneType with id {id} not found")
+        
+    def getZoneTypeByName(self, name:str)->ZoneType:
+        # Query
+        query = f"SELECT * FROM ggo_zone_type WHERE name = '{name}'"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return ZoneType(**data)
+        else:
+            raise Warning(f"ZoneType with name {name} not found")
 
