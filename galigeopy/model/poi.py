@@ -20,7 +20,7 @@ class Poi:
             properties:dict,
             network_id:int,
             logo_id:int,
-            network:'Network'
+            org:'Org'
     ):
         # Infos
         self._poi_id = poi_id
@@ -40,7 +40,7 @@ class Poi:
         self._network_id = network_id
         self._logo_id = logo_id
         # Engine
-        self._engine = network._engine
+        self._org = org
 
     # Getters and setters
     @property
@@ -79,6 +79,8 @@ class Poi:
     def network_id(self): return self._network_id
     @property
     def logo_id(self): return self._logo_id
+    @property
+    def org(self): return self._org
 
     # Magic Methods
     def __str__(self):

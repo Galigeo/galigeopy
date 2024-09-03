@@ -14,8 +14,11 @@ class TestNetwork(unittest.TestCase):
     def test_network(self):
         network = self.org.getNetworkById(self.conf["network_id"])
         self.assertIsNotNone(network)
-        self.assertEqual(network._engine, self.org.engine)
+        self.assertEqual(network.org.engine, self.org.engine)
 
+    def test_number_of_pois(self):
+        network = self.org.getNetworkById(self.conf["network_id"])
+        self.assertGreater(network.number_of_pois(), 0)
 
     def test_get_pois_list(self):
         network = self.org.getNetworkById(self.conf["network_id"])
