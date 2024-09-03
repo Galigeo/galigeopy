@@ -1,26 +1,19 @@
 import unittest
-import os
-import sys
+import json
 from sqlalchemy import Engine
 
-# Ajoutez le répertoire parent au sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '...')))
-
 from galigeopy.org.org import Org
-
-# TODO
-CONF = {
-    "user": "stihl",
-    "password": "319d925e1d52075d1b8d432da90d75b631a0a47b",
-    "host": "127.0.0.1",
-    "port": 5433,
-    "db": "galigeo"
-}
+from galigeopy.model.network import Network
 
 class TestOrg(unittest.TestCase):
+
+    def __init__(self, methodName: str = "runTest") -> None:
+        super().__init__(methodName)
+        self.conf = json.load(open("test-config.json"))
+
     def test_org(self):
         # Valid Org
-        org = Org(**CONF)
+        org = Org(**self.conf["org"])
         self.assertTrue(org.is_valid)
         self.assertIsNotNone(org.engine)
         self.assertIsInstance(org.engine, Engine)
@@ -30,12 +23,51 @@ class TestOrg(unittest.TestCase):
         self.assertFalse(org.is_valid)
         del org
 
+    def test_query(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        # Query
+        df = org.query("SELECT * FROM ggo_network")
+        self.assertIsNotNone(df)
+        self.assertGreater(len(df), 0)
+
     def test_get_networks_list(self):
         # Valid Org
-        org = Org(**CONF)
-        self.assertTrue(org.is_valid)
+        org = Org(**self.conf["org"])
         # Get networks list
         df = org.getNetworksList()
         self.assertIsNotNone(df)
         self.assertGreater(len(df), 0)
+        del org
+
+    def test_get_network_by_id(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        # Get network by id
+        network = org.getNetworkById(self.conf["network_id"])
+        self.assertIsNotNone(network)
+        self.assertIsInstance(network, Network)
+        self.assertEqual(network.network_id, self.conf["network_id"])
+        del org
+
+    def test_get_network_by_name(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        name = org.getNetworkById(self.conf["network_id"]).name
+        # Get network by name
+        network = org.getNetworkByName(name)
+        self.assertIsNotNone(network)
+        self.assertIsInstance(network, Network)
+        self.assertEqual(network.name, name)
+        self.assertEqual(network.network_id, self.conf["network_id"])
+        del org
+
+    def test_get_all_networks(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        # Get all networks
+        networks = org.getAllNetworks()
+        self.assertIsNotNone(networks)
+        self.assertGreater(len(networks), 0)
+        self.assertIsInstance(networks[0], Network)
         del org

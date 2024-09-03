@@ -2,6 +2,8 @@
 from sqlalchemy import create_engine, Engine
 import pandas as pd
 
+from galigeopy.model.network import Network
+
 class Org:
     # Constructor
     def __init__(self, user, password, host="127.0.0.1", port=5432, db="galigeo"):
@@ -35,6 +37,9 @@ class Org:
             return False
     
     # Public Methods
+    def query(self, query:str)->pd.DataFrame:
+        return pd.read_sql(query, self._engine)
+
     def getNetworksList(self)->pd.DataFrame:
         # Query
         query = "SELECT * FROM ggo_network"
@@ -42,4 +47,43 @@ class Org:
         df = pd.read_sql(query, self._engine)
         # return df
         return df
+    
+    def getNetworkById(self, id:int)->Network:
+        # Query
+        query = f"SELECT * FROM ggo_network WHERE network_id = {str(id)}"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return Network(**data)
+        else:
+            raise Warning(f"Network with id {id} not found")
+    
+    def getNetworkByName(self, name:str)->Network:
+        # Query
+        query = f"SELECT * FROM ggo_network WHERE name = '{name}'"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return Network(**data)
+        else:
+            raise Warning(f"Network with name {name} not found")
+    
+    def getAllNetworks(self)->list:
+        # Query
+        query = "SELECT * FROM ggo_network"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        networks = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self})
+            networks.append(Network(**data))
+        return networks
 
