@@ -20,7 +20,7 @@ class Network:
             last_updated_at:str,
             last_updated_by:str,
             geolevel_id:int,
-            org:'Org'
+            org:'Org' # type: ignore
     ):
         # Infos
         self._network_id = network_id

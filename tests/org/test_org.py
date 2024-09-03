@@ -4,6 +4,8 @@ from sqlalchemy import Engine
 
 from galigeopy.org.org import Org
 from galigeopy.model.network import Network
+from galigeopy.model.zone_type import ZoneType
+from galigeopy.model.zone import Zone
 
 class TestOrg(unittest.TestCase):
 
@@ -79,4 +81,42 @@ class TestOrg(unittest.TestCase):
         df = org.getZoneTypesList()
         self.assertIsNotNone(df)
         self.assertGreater(len(df), 0)
+        del org
+
+    def test_get_zone_type_by_id(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        zone_type = org.getZoneTypeById(self.conf["zone_type_id"])
+        self.assertIsNotNone(zone_type)
+        self.assertEqual(zone_type.zone_type_id, self.conf["zone_type_id"])
+        del org
+
+    def test_get_zone_type_by_name(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        name = org.getZoneTypeById(self.conf["zone_type_id"]).name
+        # Get zone type by name
+        zone_type = org.getZoneTypeByName(name)
+        self.assertIsNotNone(zone_type)
+        self.assertEqual(zone_type.name, name)
+        self.assertEqual(zone_type.zone_type_id, self.conf["zone_type_id"])
+        del org
+
+    def test_get_all_zone_types(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        # Get all zone types
+        zone_types = org.getAllZoneTypes()
+        self.assertIsNotNone(zone_types)
+        self.assertGreater(len(zone_types), 0)
+        self.assertIsInstance(zone_types[0], ZoneType)
+        del org
+
+    def test_get_zone_by_id(self):
+        # Valid Org
+        org = Org(**self.conf["org"])
+        zone = org.getZoneById(self.conf["zone_id"])
+        self.assertIsNotNone(zone)
+        self.assertIsInstance(zone, Zone)
+        self.assertEqual(zone.zone_id, self.conf["zone_id"])
         del org

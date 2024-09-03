@@ -3,13 +3,12 @@ from sqlalchemy import text
 
 from galigeopy.model.zone import Zone
 
-
 class ZoneType:
     def __init__(
         self,
         zone_type_id:int,
         name:str,
-        org: 'Org'
+        org: 'Org' # type: ignore
     ):
         # Infos
         self._zone_type_id = zone_type_id
@@ -44,7 +43,7 @@ class ZoneType:
         df = pd.read_sql(query, self._org.engine)
         if len(df) > 0:
             data = df.iloc[0].to_dict()
-            data.update({"zone_type": self})
-            return Zone(**data)
+            data.update({"org": self._org})
+            return Zone(**data) 
         else:
             raise Warning(f"Zone {zone_id} not found in ZoneType {self.name}")

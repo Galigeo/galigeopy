@@ -4,6 +4,7 @@ import pandas as pd
 
 from galigeopy.model.network import Network
 from galigeopy.model.zone_type import ZoneType
+from galigeopy.model.zone import Zone
 
 class Org:
     # Constructor
@@ -121,4 +122,30 @@ class Org:
             return ZoneType(**data)
         else:
             raise Warning(f"ZoneType with name {name} not found")
+        
+    def getAllZoneTypes(self)->list:
+        # Query
+        query = "SELECT * FROM ggo_zone_type"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        zone_types = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self})
+            zone_types.append(ZoneType(**data))
+        return zone_types
+        
+    def getZoneById(self, id:int):
+        # Query
+        query = f"SELECT * FROM ggo_zone WHERE zone_id = {str(id)}"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return Zone(**data)
+        else:
+            raise Warning(f"Zone with id {id} not found")
 

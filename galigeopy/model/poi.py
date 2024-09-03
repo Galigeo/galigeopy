@@ -20,7 +20,7 @@ class Poi:
             properties:dict,
             network_id:int,
             logo_id:int,
-            org:'Org'
+            org:'Org' # type: ignore
     ):
         # Infos
         self._poi_id = poi_id
