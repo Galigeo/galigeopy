@@ -1,0 +1,13 @@
+{
+    // Launch tests/test_galigeopy.py
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "Python: Test GaligeoPy",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/tests/test_galigeopy.py",
+            "console": "integratedTerminal",
+        }
+    ]
+}
