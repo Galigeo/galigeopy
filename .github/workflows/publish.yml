@@ -1,8 +1,6 @@
 name: upload python package to pypi when a release is created
 
 on:
-  workflow_dispatch:
-    
   release:
     types: [created]
 
