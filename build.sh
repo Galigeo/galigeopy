@@ -1,5 +1,5 @@
 # Remove the old build and dist folders
-rm -rf build dist
+rm -rf build dist galigeopy.egg-info
 
 # Build
 ./env/bin/python3 -m pip install --upgrade pip
