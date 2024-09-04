@@ -33,5 +33,7 @@ class ZoneGeounit:
 
     # Public Methods
     def getZone(self)->'Zone': # type: ignore
-        return self._org.getZoneById(self.zone_id)
+        query = text(f"SELECT zone_type_id FROM ggo_zone WHERE zone_id = {self.zone_id}")
+        zone_type_id = self.org.query(query).iloc[0]["zone_type_id"]
+        return self.org.getZoneTypeById(zone_type_id).getZoneById(self.zone_id)
     

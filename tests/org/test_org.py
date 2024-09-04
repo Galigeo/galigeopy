@@ -112,11 +112,11 @@ class TestOrg(unittest.TestCase):
         self.assertIsInstance(zone_types[0], ZoneType)
         del org
 
-    def test_get_zone_by_id(self):
+    def test_get_geolevels_list(self):
         # Valid Org
         org = Org(**self.conf["org"])
-        zone = org.getZoneById(self.conf["zone_id"])
-        self.assertIsNotNone(zone)
-        self.assertIsInstance(zone, Zone)
-        self.assertEqual(zone.zone_id, self.conf["zone_id"])
+        # Get geolevels list
+        df = org.getGeolevelsList()
+        self.assertIsNotNone(df)
+        self.assertGreater(len(df), 0)
         del org

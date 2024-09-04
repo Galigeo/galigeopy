@@ -4,7 +4,7 @@ import pandas as pd
 
 from galigeopy.model.network import Network
 from galigeopy.model.zone_type import ZoneType
-from galigeopy.model.zone import Zone
+from galigeopy.model.geolevel import Geolevel
 
 class Org:
     # Constructor
@@ -135,17 +135,25 @@ class Org:
             data.update({"org": self})
             zone_types.append(ZoneType(**data))
         return zone_types
-        
-    def getZoneById(self, id:int):
+    
+    def getGeolevelsList(self)->pd.DataFrame:
         # Query
-        query = f"SELECT * FROM ggo_zone WHERE zone_id = {str(id)}"
+        query = "SELECT * FROM ggo_geolevel"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # return df
+        return df
+    
+    def getGeolevelById(self, id:int)->Geolevel:
+        # Query
+        query = f"SELECT * FROM ggo_geolevel WHERE geolevel_id = {str(id)}"
         # Get data from query
         df = pd.read_sql(query, self._engine)
         # Data
         if len(df) > 0:
             data = df.iloc[0].to_dict()
             data.update({"org": self})
-            return Zone(**data)
+            return Geolevel(**data)
         else:
-            raise Warning(f"Zone with id {id} not found")
+            raise Warning(f"Geolevel with id {id} not found")
 

@@ -10,3 +10,4 @@ from galigeopy.model.poi import Poi
 from galigeopy.model.zone_type import ZoneType
 from galigeopy.model.zone import Zone
 from galigeopy.model.zone_geounit import ZoneGeounit
+from galigeopy.model.geolevel import Geolevel
