@@ -5,6 +5,7 @@ import pandas as pd
 from galigeopy.model.network import Network
 from galigeopy.model.zone_type import ZoneType
 from galigeopy.model.geolevel import Geolevel
+from galigeopy.model.geolevel_data_type import GeolevelDataType
 
 class Org:
     # Constructor
@@ -157,3 +158,62 @@ class Org:
         else:
             raise Warning(f"Geolevel with id {id} not found")
 
+    def getGeolevelByName(self, name:str)->Geolevel:
+        # Query
+        query = f"SELECT * FROM ggo_geolevel WHERE name = '{name}'"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return Geolevel(**data)
+        else:
+            raise Warning(f"Geolevel with name {name} not found")
+        
+    def getAllGeolevels(self)->list:
+        # Query
+        query = "SELECT * FROM ggo_geolevel"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        geolevels = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self})
+            geolevels.append(Geolevel(**data))
+        return geolevels
+    
+    def getGeolevelDataTypesList(self)->pd.DataFrame:
+        # Query
+        query = "SELECT * FROM ggo_geoleveldata_type"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # return df
+        return df
+    
+    def getGeolevelDataTypeById(self, id:int)->GeolevelDataType:
+        # Query
+        query = f"SELECT * FROM ggo_geoleveldata_type WHERE custdata_type_id = {str(id)}"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return GeolevelDataType(**data)
+        else:
+            raise Warning(f"GeolevelDataType with id {id} not found")
+        
+    def getGeolevelDataTypeByName(self, name:str)->GeolevelDataType:
+        # Query
+        query = f"SELECT * FROM ggo_geoleveldata_type WHERE name = '{name}'"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        if len(df) > 0:
+            data = df.iloc[0].to_dict()
+            data.update({"org": self})
+            return GeolevelDataType(**data)
+        else:
+            raise Warning(f"GeolevelDataType with name {name} not found")
