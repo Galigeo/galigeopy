@@ -40,8 +40,17 @@ class Org:
             return False
     
     # Public Methods
-    def query(self, query:str)->pd.DataFrame:
+    def query_df(self, query:str)->pd.DataFrame:
         return pd.read_sql(query, self._engine)
+
+    def query(self, query:str)->list:
+        with self._engine.connect() as conn:
+            result = conn.execute(text(query))
+            conn.commit()
+            if result.returns_rows:
+                return result.fetchall()
+            else:
+                return []
 
     def getNetworksList(self)->pd.DataFrame:
         # Query

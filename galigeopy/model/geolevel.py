@@ -1,5 +1,6 @@
 import pandas as pd
 import geopandas as gpd
+import json
 
 from sqlalchemy import text
 
@@ -144,3 +145,53 @@ class Geolevel:
         # return df
         return gdf
     
+    def getJson(self)->dict:
+        return {
+            "geolevel_id": self._geolevel_id,
+            "name": self._name,
+            "geounit_code": self._geounit_code,
+            "table_name": self._table_name,
+            "geom_field": self._geom_field,
+            "geom_centroid_field": self._geom_centroid_field,
+            "country": self._country,
+            "country_iso3": self._country_iso3,
+            "level": self._level,
+            "description": self._description,
+            "properties": self._properties,
+            "sociodemo": self._sociodemo
+        }
+    
+    def add_to_model(self) -> int:
+        # Add to database
+        query = f"""
+        INSERT INTO ggo_geolevel (
+            name,
+            geounit_code,
+            table_name,
+            geom_field,
+            geom_centroid_field,
+            country,
+            country_iso3,
+            level,
+            description,
+            properties,
+            sociodemo
+        )
+        VALUES (
+            '{self._name.replace("'", "''")}',
+            '{self._geounit_code}',
+            '{self._table_name}',
+            '{self._geom_field}',
+            '{self._geom_centroid_field}',
+            '{self._country.replace("'", "''")}',
+            '{self._country_iso3}',
+            '{self._level.replace("'", "''")}',
+            '{self._description.replace("'", "''")}',
+            '{json.dumps(self._properties).replace("'", "''")}',
+            '{json.dumps(self._sociodemo).replace("'", "''")}'
+        )
+        RETURNING geolevel_id;
+        """
+        geolevel_id = self._org.query(query)[0][0]
+        # Return
+        return geolevel_id
