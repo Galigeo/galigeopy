@@ -101,7 +101,7 @@ class Zone:
             {self.geolevel_id},
             {self.zone_type_id},
             {self.poi_id},
-            {self.parent_zone_id}
+            {self.parent_zone_id if self.parent_zone_id is not None else 'NULL'}
         ) RETURNING zone_id;
         """
         zone_id = self._org.query(query)[0][0]
