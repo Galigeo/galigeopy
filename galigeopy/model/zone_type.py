@@ -47,3 +47,16 @@ class ZoneType:
             return Zone(**data) 
         else:
             raise Warning(f"Zone {zone_id} not found in ZoneType {self.name}")
+        
+    def add_to_model(self)-> int:
+        # Add to database
+        query = f"""
+        INSERT INTO ggo_zone_type (
+            name
+        ) VALUES (
+            '{self.name}'
+        ) RETURNING zone_type_id;
+        """
+        zone_type_id = self._org.query(query)[0][0]
+        return zone_type_id
+

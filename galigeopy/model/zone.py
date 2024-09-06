@@ -86,3 +86,23 @@ class Zone:
             return ZoneGeounit(**data)
         else:
             raise Warning(f"Geounit {geounit_id} not found in Zone {self.zone_id}")
+
+    def add_to_model(self) -> int:
+        # Add to database
+        query = f"""
+        INSERT INTO ggo_zone (
+            properties,
+            geolevel_id,
+            zone_type_id,
+            poi_id,
+            parent_zone_id
+        ) VALUES (
+            '{self.properties}',
+            {self.geolevel_id},
+            {self.zone_type_id},
+            {self.poi_id},
+            {self.parent_zone_id}
+        ) RETURNING zone_id;
+        """
+        zone_id = self._org.query(query)[0][0]
+        return zone_id
