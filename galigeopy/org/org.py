@@ -21,16 +21,23 @@ class Org:
         self._is_valid = False
         self._engine = self._get_engine()
         self._is_valid = self._check_validity()
+        self._default_schema = self._get_default_schema()
     
     # Getters and setters
     @property
     def engine(self): return self._engine
     @property
     def is_valid(self): return self._is_valid
+    @property
+    def default_schema(self): return self._default_schema
 
     # Private Methods
     def _get_engine(self) -> Engine:
         return create_engine(f'postgresql://{self._user}:{self._password}@{self._host}:{self._port}/{self._db}')
+
+    def _get_default_schema(self)->str:
+        query = "SELECT current_schema()"
+        return self.query(query)[0][0]
 
     def _check_validity(self)->bool:
         # Check connection
