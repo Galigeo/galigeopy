@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, Engine, text
 import pandas as pd
 
 from galigeopy.model.network import Network
+from galigeopy.model.poi import Poi
 from galigeopy.model.zone_type import ZoneType
 from galigeopy.model.geolevel import Geolevel
 from galigeopy.model.geolevel_data_type import GeolevelDataType
@@ -98,6 +99,19 @@ class Org:
             data.update({"org": self})
             networks.append(Network(**data))
         return networks
+    
+    def getPoisByCode(self, code:str)->list:
+        # Query
+        query = f"SELECT * FROM ggo_poi WHERE id = '{code}'"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        pois = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self})
+            pois.append(Poi(**data))
+        return pois
     
     def getZoneTypesList(self)->pd.DataFrame:
         # Query
