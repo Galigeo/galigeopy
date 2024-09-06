@@ -2,7 +2,7 @@ from pathlib import Path
 
 import setuptools
 
-VERSION = "0.0.6"  # PEP-440
+VERSION = "0.0.7"  # PEP-440
 
 NAME = "galigeopy"
 

@@ -67,6 +67,10 @@ class Geolevel:
     def org(self): return self._org
 
     # Public Methods
+    def getGeounitCodesList(self)->list:
+        query = f"SELECT {self._geounit_code} FROM {self._table_name}"
+        return self._org.query(query)[0]
+
     def getGeoDataset(self, all_data:bool=False, compute_centroid:bool=True, compute_centroid_crs:str="EPSG:2154", geounits:list=None)->gpd.GeoDataFrame:
         # Query
         query = f"SELECT * FROM {self._table_name}"
