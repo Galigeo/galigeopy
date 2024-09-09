@@ -86,6 +86,16 @@ class Zone:
             return ZoneGeounit(**data)
         else:
             raise Warning(f"Geounit {geounit_id} not found in Zone {self.zone_id}")
+        
+    def getAllZoneGeounits(self) -> list:
+        query = f"SELECT * FROM ggo_zone_geounit WHERE zone_id = {self.zone_id}"
+        df = pd.read_sql(query, self._org.engine)
+        zone_geounits = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self._org})
+            zone_geounits.append(ZoneGeounit(**data))
+        return zone_geounits
 
     def add_to_model(self) -> int:
         # Add to database
