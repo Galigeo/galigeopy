@@ -1,6 +1,7 @@
 # IMPORTS
 from sqlalchemy import create_engine, Engine, text
 import pandas as pd
+import geopandas as gpd
 
 from galigeopy.model.network import Network
 from galigeopy.model.poi import Poi
@@ -111,11 +112,11 @@ class Org:
         # Query
         query = f"SELECT * FROM ggo_poi WHERE id = '{code}'"
         # Get data from query
-        df = pd.read_sql(query, self._engine)
+        gdf = gpd.read_postgis(query, self._engine, geom_col="geom")
         # Data
         pois = []
-        for i in range(len(df)):
-            data = df.iloc[i].to_dict()
+        for i in range(len(gdf)):
+            data = gdf.iloc[i].to_dict()
             data.update({"org": self})
             pois.append(Poi(**data))
         return pois

@@ -1,4 +1,5 @@
 import pandas as pd
+import geopandas as gpd
 from sqlalchemy import text
 
 from galigeopy.model.poi import Poi
@@ -45,9 +46,9 @@ class Zone:
     # Public Methods
     def getPoi(self)->Poi:
         query = f"SELECT * FROM ggo_poi WHERE poi_id = {self.poi_id}"
-        df = pd.read_sql(query, self._org.engine)
-        if len(df) > 0:
-            data = df.iloc[0].to_dict()
+        gdf = gpd.read_postgis(query, self._org.engine, geom_col='geom')
+        if len(gdf) > 0:
+            data = gdf.iloc[0].to_dict()
             data.update({"org": self._org})
             return Poi(**data)
         else:
