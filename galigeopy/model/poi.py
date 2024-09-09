@@ -70,9 +70,9 @@ class Poi:
     @property
     def geom(self): return self._geom
     @property
-    def x(self): return float(self._geom.x)
+    def x(self): return float(self._geom.replace("POINT(", "").replace(")", "").split(" ")[0])
     @property
-    def y(self): return float(self._geom.y)
+    def y(self): return float(self._geom.replace("POINT(", "").replace(")", "").split(" ")[1])
     @property
     def properties(self): return self._properties
     @property
