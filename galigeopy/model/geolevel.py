@@ -109,6 +109,7 @@ class Geolevel:
         if self._geom_field != "geom":
             gdf["geom"] = gdf[self._geom_field]
             gdf = gdf.drop(columns=[self._geom_field])
+            gdf = gdf.set_geometry("geom")
         gdf = gdf[[col for col in gdf.columns if col != "geom"] + ["geom"]]
         # If not all data
         if not all_data:
