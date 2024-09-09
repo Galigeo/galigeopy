@@ -117,7 +117,7 @@ class Zone:
         zone_id = self._org.query(query)[0][0]
         return zone_id
 
-    def plot(self, prop:str=None)->'Axes':  # type: ignore
+    def plot(self, prop:str=None, plot_poi:bool=False)->'Axes':  # type: ignore
         # Get geolevel
         geolevel = self._org.getGeolevelById(self.geolevel_id)
         # Get list of geounits
@@ -130,6 +130,15 @@ class Zone:
             geounits["property_to_plot"] = geounits["properties"].apply(lambda x : x[prop])
             geounits = geounits[['geounit_code', 'property_to_plot']]
             gdf = gdf.merge(geounits, on="geounit_code")
-            return gdf.plot(column='property_to_plot', legend=True)
+            ax = gdf.plot(column='property_to_plot', legend=True)
+            if plot_poi:
+                poi = self.getPoi()
+                x, y = poi.x, poi.y
+                ax.scatter(x, y, color='red')
         else:
-            return gdf.plot()
+            ax = gdf.plot()
+            if plot_poi:
+                poi = self.getPoi()
+                x, y = poi.x, poi.y
+                ax.scatter(x, y, color='red')
+        return ax
