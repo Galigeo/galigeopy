@@ -64,7 +64,7 @@ class ZoneType:
         INSERT INTO ggo_zone_type (
             name
         ) VALUES (
-            '{self.name}'
+            '{self.name.replace("'", "''")}'
         ) RETURNING zone_type_id;
         """
         zone_type_id = self._org.query(query)[0][0]
