@@ -48,6 +48,16 @@ class ZoneType:
         else:
             raise Warning(f"Zone {zone_id} not found in ZoneType {self.name}")
         
+    def getAllZones(self):
+        query = text(f"SELECT * FROM ggo_zone WHERE zone_type_id = {self.zone_type_id}")
+        df = pd.read_sql(query, self._org.engine)
+        zones = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self._org})
+            zones.append(Zone(**data))
+        return zones
+        
     def add_to_model(self)-> int:
         # Add to database
         query = f"""

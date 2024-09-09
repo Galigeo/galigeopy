@@ -106,3 +106,20 @@ class Zone:
         """
         zone_id = self._org.query(query)[0][0]
         return zone_id
+
+    def plot(self, prop:str=None)->'Axes':  # type: ignore
+        # Get geolevel
+        geolevel = self._org.getGeolevelById(self.geolevel_id)
+        # Get list of geounits
+        geounits = self.getZoneGeounitsList()
+        geounits_code_list = geounits["geounit_code"].to_list()
+        # Get geodata
+        gdf = geolevel.getGeoDataset(geounits=geounits_code_list)
+        # Plot
+        if prop is not None:
+            geounits["property_to_plot"] = geounits["properties"].apply(lambda x : x[prop])
+            geounits = geounits[['geounit_code', 'property_to_plot']]
+            gdf = gdf.merge(geounits, on="geounit_code")
+            return gdf.plot(column='property_to_plot', legend=True)
+        else:
+            return gdf.plot()

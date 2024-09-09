@@ -77,7 +77,8 @@ class Geolevel:
         # Query
         query = f"SELECT * FROM {self._table_name}"
         if geounits is not None:
-            query = f"{query} WHERE {self._geounit_code} IN ({', '.join([str(geounit) for geounit in geounits])})"
+            str_geounits = ["'" + str(g) + "'" for g in geounits]
+            query = f"{query} WHERE {self._geounit_code} IN ({', '.join([str(geounit) for geounit in str_geounits])})"
         # Get data from query
         gdf = gpd.read_postgis(query, self._org.engine, geom_col=self._geom_field)
         # Geounit_code column
@@ -96,7 +97,8 @@ class Geolevel:
             gdf = gdf.drop(columns=[self._geom_centroid_field])
             query = f"SELECT {self._geounit_code}, {self._geom_centroid_field} FROM {self._table_name}"
             if geounits is not None:
-                query = f"{query} WHERE {self._geounit_code} IN ({', '.join([str(geounit) for geounit in geounits])})"
+                str_geounits = ["'" + str(g) + "'" for g in geounits]
+                query = f"{query} WHERE {self._geounit_code} IN ({', '.join([geounit for geounit in str_geounits])})"
             # Get data from query
             gdf_centroid = gpd.read_postgis(query, self._org.engine, geom_col=self._geom_centroid_field)
             # Merge
