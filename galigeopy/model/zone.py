@@ -1,5 +1,6 @@
 import pandas as pd
 import geopandas as gpd
+import json
 from sqlalchemy import text
 
 from galigeopy.model.poi import Poi
@@ -108,7 +109,7 @@ class Zone:
             poi_id,
             parent_zone_id
         ) VALUES (
-            '{self.properties}',
+            '{json.dumps(self.properties).replace("'", "''")}',
             {self.geolevel_id},
             {self.zone_type_id},
             {self.poi_id},
