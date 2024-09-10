@@ -204,3 +204,9 @@ class Geolevel:
         geolevel_id = self._org.query(query)[0][0]
         # Return
         return geolevel_id
+    
+    def number_of_geounits(self)->int:
+        query = text(f"SELECT COUNT(*) FROM {self._table_name}")
+        with self._org.engine.connect() as conn:
+            result = conn.execute(query)
+            return result.scalar()

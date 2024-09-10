@@ -11,3 +11,8 @@ from galigeopy.model.zone_type import ZoneType
 from galigeopy.model.zone import Zone
 from galigeopy.model.zone_geounit import ZoneGeounit
 from galigeopy.model.geolevel import Geolevel
+from galigeopy.model.geolevel_data_type import GeolevelDataType
+# from galigeopy.model.geolevel_data import GeolevelData
+
+# Engine
+from galigeopy.engine.osrm_engine import OsrmEngine
