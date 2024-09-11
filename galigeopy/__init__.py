@@ -16,3 +16,6 @@ from galigeopy.model.geolevel_data_type import GeolevelDataType
 
 # Engine
 from galigeopy.engine.osrm_engine import OsrmEngine
+
+# Utils
+from galigeopy.utils.spherical_calculus import haversine_distance
