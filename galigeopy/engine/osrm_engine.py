@@ -1,6 +1,7 @@
 import requests
 import asyncio
 import aiohttp
+import json
 
 class OsrmEngine:
     def __init__(
@@ -104,7 +105,7 @@ class OsrmEngine:
             # return ret
         # Run
         data = asyncio.run(main(urls))
-        return data
+        return [d['routes'] for d in [json.loads(d) for d in data]]
 
         
     
