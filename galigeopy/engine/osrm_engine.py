@@ -1,4 +1,6 @@
 import requests
+import asyncio
+import aiohttp
 
 class OsrmEngine:
     def __init__(
@@ -40,8 +42,7 @@ class OsrmEngine:
         annotations:bool=False,
         geometries:str="polyline",
         overview:str="simplified",
-        continue_straight:str="default",
-
+        continue_straight:str="default"
     )->list:
         url = f"{self.osrm_url.removesuffix('/')}/route/{self.version}/{self.profile}/{start['lng']},{start['lat']};{end['lng']},{end['lat']}"
         # Properties
@@ -59,6 +60,54 @@ class OsrmEngine:
             raise Exception(f"Error {data['code']}: {data['message']}")
         return data["routes"]
     
+    def get_route_async(
+        self,
+        start:list,
+        end:list,
+        alternatives:bool=False,
+        steps:bool=False,
+        annotations:bool=False,
+        geometries:str="polyline",
+        overview:str="simplified",
+        continue_straight:str="default"
+    )->list:
+        # Check start and end have the same length
+        if len(start) != len(end):
+            raise Exception("Start and end must have the same length")
+        # Prepare urls
+        urls = []
+        for i in range(len(start)):
+            url = f"{self.osrm_url.removesuffix('/')}/route/{self.version}/{self.profile}/{start[i]['lng']},{start[i]['lat']};{end[i]['lng']},{end[i]['lat']}"
+            # Properties
+            url += f"?alternatives={str(alternatives).lower()}"
+            url += f"&steps={str(steps).lower()}"
+            url += f"&annotations={str(annotations).lower()}"
+            url += f"&geometries={geometries}"
+            url += f"&overview={overview}"
+            url += f"&continue_straight={continue_straight}"
+            urls.append(url)
+        # Async
+        async def get(url, session):
+            try:
+                async with session.get(url=url) as response:
+                    resp = await response.read()
+                    return resp
+                    # print("Successfully got url {} with resp of length {}.".format(url, len(resp)))
+            except Exception as e:
+                # print("Unable to get url {} due to {}.".format(url, e.__class__))
+                pass
+        async def main(urls):
+            async with aiohttp.ClientSession() as session:
+                ret = await asyncio.gather(*(get(url, session) for url in urls))
+                return ret
+            # print("Finalized all. Return is a list of len {} outputs.".format(len(ret)))
+            # return ret
+        # Run
+        data = asyncio.run(main(urls))
+        return data
+
+        
+    
     def get_table(self, locations:list, sources:list=None, destinations:list=None)->list:
         url = f"{self.osrm_url.removesuffix('/')}/table/{self.version}/{self.profile}/"
         url += f";".join([f"{location['lng']},{location['lat']}" for location in locations])
@@ -70,6 +119,7 @@ class OsrmEngine:
             if sources:
                 url += "&"
             url += f"destinations={';'.join([str(destination) for destination in destinations])}"
+        print(url)
         response = requests.get(url, verify=self.verified_url)
         if response.status_code != 200:
             raise Exception(f"Error {response.status_code}: {response.text}")
