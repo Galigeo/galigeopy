@@ -120,7 +120,6 @@ class OsrmEngine:
             if sources:
                 url += "&"
             url += f"destinations={';'.join([str(destination) for destination in destinations])}"
-        print(url)
         response = requests.get(url, verify=self.verified_url)
         if response.status_code != 200:
             raise Exception(f"Error {response.status_code}: {response.text}")
