@@ -37,7 +37,7 @@ class GeolevelDataType:
         return self._org.getGeolevelById(self._geolevel_id)
     
     def getDataset(self)->pd.DataFrame:
-        query = text(f"SELECT * FROM ggo_geolevel_data WHERE geolevel_data_type_id = {self.geolevel_data_type_id}")
+        query = text(f"SELECT * FROM ggo_geoleveldata WHERE custdata_type_id = {self.geolevel_data_type_id}")
         return pd.read_sql(query, self._org.engine)
     
     def getGeoDataset(self)->gpd.GeoDataFrame:
@@ -46,10 +46,10 @@ class GeolevelDataType:
             SELECT
                 g.*,
                 geo.{geolevel.geom_field} AS geometry
-            FROM ggo_geolevel_data g
+            FROM ggo_geoleveldata g
             JOIN {geolevel.table_name} AS geo ON geo.{geolevel.geounit_code} = g.geounit_code
             WHERE
-                geolevel_data_type_id = {self.geolevel_data_type_id}
+                custdata_type_id = {self.geolevel_data_type_id}
         """)
         return gpd.read_postgis(query, self._org.engine, geom_col='geometry')
     
@@ -64,7 +64,7 @@ class GeolevelDataType:
                 '{self.name.replace("'", "''")}',
                 '{json.dumps(self.properties).replace("'", "''")}',
                 {self.geolevel_id}
-            ) RETURNING geolevel_data_type_id
+            ) RETURNING custdata_type_id
         """
         geolevel_data_type_id = self._org.query(query)[0][0]
         # return
