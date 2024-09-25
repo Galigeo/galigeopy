@@ -191,7 +191,7 @@ class Geolevel:
             '{self._geounit_code}',
             '{self._table_name}',
             '{self._geom_field}',
-            '{self._geom_centroid_field}',
+            '{self._geom_centroid_field if self._geom_centroid_field is not None else ""}',
             '{self._country.replace("'", "''")}',
             '{self._country_iso3}',
             '{self._level.replace("'", "''")}',
