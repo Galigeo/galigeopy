@@ -117,6 +117,24 @@ class Geolevel:
         # return df
         return gdf
 
+    def getGeoCentroidDataset(self, geounits:list=None)->gpd.GeoDataFrame:
+        # Query
+        query = f"SELECT {self._geounit_code}, {self._geom_centroid_field} FROM {self._table_name}"
+        if geounits is not None:
+            str_geounits = ["'" + str(g) + "'" for g in geounits]
+            query = f"{query} WHERE {self._geounit_code} IN ({', '.join([str(geounit) for geounit in str_geounits])})"
+        # Get data from query
+        gdf = gpd.read_postgis(query, self._org.engine, geom_col=self._geom_centroid_field)
+        # Geounit_code column
+        if self._geounit_code != "geounit_code":
+            gdf["geounit_code"] = gdf[self._geounit_code]
+            gdf = gdf.drop(columns=[self._geounit_code])
+        gdf = gdf[["geounit_code"] + [col for col in gdf.columns if col != "geounit_code"]]
+        # Geometry in last
+        gdf = gdf.set_geometry(self._geom_centroid_field)
+        # return df
+        return gdf
+
     def getSocioDemoDataset(self, geounits:list=None)->pd.DataFrame:
         # Query
         query = self._sociodemo["query"]
