@@ -12,12 +12,14 @@ class GeolevelDataType:
             name:str,
             properties:dict,
             geolevel_id:int,
+            description:str,
             org:'Org' # type: ignore
     ):
         self._geolevel_data_type_id = custdata_type_id
         self._name = name
         self._properties = properties
         self._geolevel_id = geolevel_id
+        self._description = description
         self._org = org
 
     # Getters
@@ -29,6 +31,8 @@ class GeolevelDataType:
     def properties(self): return self._properties
     @property
     def geolevel_id(self): return self._geolevel_id
+    @property
+    def description(self): return self._description
     @property
     def org(self): return self._org
 

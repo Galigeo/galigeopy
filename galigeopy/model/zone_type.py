@@ -8,11 +8,13 @@ class ZoneType:
         self,
         zone_type_id:int,
         name:str,
+        description:str,
         org: 'Org' # type: ignore
     ):
         # Infos
         self._zone_type_id = zone_type_id
         self._name = name
+        self._description = description
         # Engine
         self._org = org
 
@@ -24,6 +26,8 @@ class ZoneType:
     def zone_type_id(self): return self._zone_type_id
     @property
     def name(self): return self._name
+    @property
+    def description(self): return self._description
     @property
     def org(self): return self._org
     

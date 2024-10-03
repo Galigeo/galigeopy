@@ -20,6 +20,7 @@ class Network:
             last_updated_at:str,
             last_updated_by:str,
             geolevel_id:int,
+            description:str,
             org:'Org' # type: ignore
     ):
         # Infos
@@ -34,6 +35,7 @@ class Network:
         self._last_updated_at = last_updated_at
         self._last_updated_by = last_updated_by
         self._geolevel_id = geolevel_id
+        self._description = description
         self._org = org
 
     # Getters and setters
@@ -59,6 +61,8 @@ class Network:
     def last_updated_by(self): return self._last_updated_by
     @property
     def geolevel_id(self): return self._geolevel_id
+    @property
+    def description(self): return self._description
     @property
     def org(self): return self._org
 
