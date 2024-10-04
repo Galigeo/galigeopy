@@ -1,15 +1,14 @@
 # GaligeoPy
-from galigeopy.galigeopy import about, check
+from .galigeopy import about, check
 
 # Org
-from galigeopy.org import *
+from .org import *
 
 # Model
-from galigeopy.model import *
-# from galigeopy.model.geolevel_data import GeolevelData
+from .model import *
 
 # Engine
-from galigeopy.engine import *
+from .engine import *
 
 # Utils
-from galigeopy.utils import *
+from .utils import *

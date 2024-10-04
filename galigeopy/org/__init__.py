@@ -1,1 +1,1 @@
-from org import Org
+from .org import Org

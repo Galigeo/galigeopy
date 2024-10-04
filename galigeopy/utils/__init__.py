@@ -1,1 +1,1 @@
-from spherical_calculus import haversine_distance
+from .spherical_calculus import haversine_distance
