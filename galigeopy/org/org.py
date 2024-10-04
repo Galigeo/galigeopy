@@ -8,6 +8,7 @@ from galigeopy.model.poi import Poi
 from galigeopy.model.zone_type import ZoneType
 from galigeopy.model.geolevel import Geolevel
 from galigeopy.model.geolevel_data_type import GeolevelDataType
+from galigeopy.model.distancier_session import DistancierSession
 
 class Org:
     # Constructor
@@ -248,3 +249,45 @@ class Org:
             return GeolevelDataType(**data)
         else:
             raise Warning(f"GeolevelDataType with name {name} not found")
+        
+    def getDistancierSessionList(self)->pd.DataFrame:
+        # Query
+        q = f"SELECT * FROM ggo_distancier_session"
+        df = self.query_df(q)
+        return df
+    
+    def getDistancierSessionById(self, session_id:int)->DistancierSession:
+        # Query
+        q = f"SELECT * FROM ggo_distancier_session WHERE session_id = {session_id}"
+        df = self._org.query_df(q)
+        if len(df) != 1:
+            raise Warning(f"DistancierSession with id {session_id} doesn't exist")
+        data = df.iloc[0].to_dict()
+        data.update({"org": self})
+        return DistancierSession(**data)
+    
+    def getDistancierSessionByName(self, name:str)->DistancierSession:
+        # Query
+        q = f"SELECT * FROM ggo_distancier_session WHERE name = '{name}'"
+        df = self._org.query_df(q)
+        if len(df) != 1:
+            raise Warning(f"DistancierSession with name {name} doesn't exist")
+        data = df.iloc[0].to_dict()
+        data.update({"org": self})
+        return DistancierSession(**data)
+    
+    def getAllDistancierSessions(self)->list:
+        # query
+        q = f"SELECT * FROM ggo_distancier_session"
+        df = self.query_df(q)
+        # Data
+        sessions = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self})
+            s = DistancierSession(**data)
+            sessions.append(s)
+        return sessions
+
+
+    
