@@ -12,10 +12,10 @@ class DistancierSession:
             session_id:int,
             name:str,
             engine:str,
-            id_start:int,
-            id_end:int,
-            type_start:str,
-            type_end:str,
+            network_id_start:int,
+            network_id_end:int,
+            geolevel_id_start:int,
+            geolevel_id_end:int,
             direction:str,
             max_distance:int,
             max_time:int,
@@ -26,14 +26,35 @@ class DistancierSession:
         self._session_id = session_id
         self._name = name
         self._engine = engine
-        self._id_start = id_start
-        self._id_end = id_end
-        self._type_start = type_start
-        self._type_end = type_end
+        try:
+            self._network_id_start = int(network_id_start)
+        except: 
+            self._network_id_start = None
+        try:
+            self._network_id_end = int(network_id_end)
+        except:
+            self._network_id_end = None
+        try:
+            self._geolevel_id_start = int(geolevel_id_start)
+        except:
+            self._geolevel_id_start = None
+        try:
+            self._geolevel_id_end = int(geolevel_id_end)
+        except:
+            self._geolevel_id_end = None
         self._direction = direction
-        self._max_distance = max_distance
-        self._max_time = max_time
-        self._max_calc_out = max_calc_out
+        try:
+            self._max_distance = int(max_distance)
+        except:
+            self._max_distance = None
+        try:
+            self._max_time = int(max_time)
+        except:
+            self._max_time = None
+        try:
+            self._max_calc_out = int(max_calc_out)
+        except:
+            self._max_calc_out = None
         self._no_route = no_route
         self._org = org
 
@@ -45,13 +66,13 @@ class DistancierSession:
     @property
     def engine(self): return self._engine
     @property
-    def id_start(self): return self._id_start
+    def network_id_start(self): return self._network_id_start
     @property
-    def id_end(self): return self._id_end
+    def network_id_end(self): return self._network_id_end
     @property
-    def type_start(self): return self._type_start
+    def geolevel_id_start(self): return self._geolevel_id_start
     @property
-    def type_end(self): return self._type_end
+    def geolevel_id_end(self): return self._geolevel_id_end
     @property
     def direction(self): return self._direction
     @property
@@ -70,21 +91,27 @@ class DistancierSession:
         return f"DistancierSession({self._session_id} - {self._name})"
     
     # Public Methods
-    def getStartingObject(self)->Network|Geolevel:
-        if self._type_start == 'network':
-            return self._org.getNetworkById(self._id_start)
-        elif self._type_start == 'geolevel':
-            return self._org.getGeolevelById(self._id_start)
+    def getStartingType(self)->str:
+        if self._network_id_start:
+            return 'network'
         else:
-            raise ValueError(f"Type start {self._type_start} doesn't exist.")
+            return 'geolevel'
+    def getEndingType(self)->str:
+        if self._network_id_end:
+            return 'network'
+        else:
+            return 'geolevel'
+    def getStartingObject(self)->Network|Geolevel:
+        if self._network_id_start:
+            return self._org.getNetwork(self._network_id_start)
+        else:
+            return self._org.getGeolevel(self._geolevel_id_start)
         
     def getEndingObject(self)->Network|Geolevel:
-        if self._type_end == 'network':
-            return self._orh.getNetworkById(self._id_end)
-        elif self._type_end == 'geolevel':
-            return self._org.getGeolevelById(self._id_end)
+        if self._network_id_end:
+            return self._org.getNetwork(self._network_id_end)
         else:
-            raise ValueError(f"Type end {self.type_end} doesn't exist.")
+            return self._org.getGeolevel(self._geolevel_id_end)
         
     def getDistancier(self)->pd.DataFrame:
         # Query
@@ -97,10 +124,10 @@ class DistancierSession:
             "session_id": self._session_id,
             "name": self.name,
             "engine": self._engine,
-            "id_start": self._id_start,
-            "id_end": self._id_end,
-            "type_start": self._type_start,
-            "type_end": self._type_end,
+            "network_id_start": self._network_id_start,
+            "network_id_end": self._network_id_end,
+            "geolevel_id_start": self._geolevel_id_start,
+            "geolevel_id_end": self._geolevel_id_end,
             "direction": self._direction,
             "max_distance": self._max_distance,
             "max_time": self._max_time,
@@ -110,24 +137,24 @@ class DistancierSession:
     
     def getPoisIdList(self)->list:
         pois_ids_list = []
-        if self._type_start == 'network':
-            q = f"SELECT poi_id_start FROM ggo_distancier WHERE session_id = {self._session_id}"
+        if self.getStartingType() == 'network':
+            q = f"SELECT DISTINCT poi_id_start FROM ggo_distancier WHERE session_id = {self._session_id} AND poi_id_start IS NOT NULL"
             df = self._org.query_df(q)
             pois_ids_list += df['poi_id_start'].tolist()
-        if self._type_end == 'network':
-            q = f"SELECT poi_id_end FROM ggo_distancier WHERE session_id = {self._session_id}"
+        if self.getEndingType() == 'network':
+            q = f"SELECT DISTINCT poi_id_end FROM ggo_distancier WHERE session_id = {self._session_id} AND poi_id_end IS NOT NULL"
             df = self._org.query_df(q)
             pois_ids_list += df['poi_id_end'].tolist()
         return pois_ids_list
     
     def getGeounitCodeList(self)->list:
         geounit_code_list = []
-        if self._type_start == 'geolevel':
-            q = f"SELECT geounit_code_start FROM ggo_distancier WHERE session_id = {self._session_id}"
+        if self.getEndingType() == 'geolevel':
+            q = f"SELECT DISTINCT geounit_code_start FROM ggo_distancier WHERE session_id = {self._session_id} AND geounit_code_start IS NOT NULL"
             df = self._org.query_df(q)
             geounit_code_list += df['geounit_code_start'].tolist()
-        if self._type_end == 'geolevel':
-            q = f"SELECT geounit_code_end FROM ggo_distancier WHERE session_id = {self._session_id}"
+        if self.getEndingType() == 'geolevel':
+            q = f"SELECT DISTINCT geounit_code_end FROM ggo_distancier WHERE session_id = {self._session_id} AND geounit_code_end IS NOT NULL"
             df = self._org.query_df(q)
             geounit_code_list += df['geounit_code_end'].tolist()
         return geounit_code_list

@@ -108,4 +108,17 @@ class Network:
             data.update({"org": self.org})
             pois.append(Poi(**data))
         return pois
+    
+    def getNetworkProperties(self)->pd.DataFrame:
+        # Query
+        query = f"SELECT properties FROM ggo_poi WHERE network_id = {self._network_id}"
+        list_prop = pd.read_sql(query, self._org.engine)["properties"].to_list()
+        df_properties = pd.DataFrame(list_prop, dtype='str')
+        # Auto detect dtypes
+        for col in df_properties.columns:
+            df_properties[col] = pd.to_numeric(df_properties[col], errors='ignore')
+        df_prop = pd.DataFrame()
+        df_prop["columns"] = df_properties.columns
+        df_prop["dtypes"] = df_properties.dtypes
+        return df_prop
         

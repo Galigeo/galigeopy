@@ -1,5 +1,6 @@
 # IMPORTS
 from sqlalchemy import create_engine, Engine, text
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 
@@ -50,8 +51,9 @@ class Org:
             return False
     
     # Public Methods
-    def query_df(self, query:str)->pd.DataFrame:
-        return pd.read_sql(query, self._engine)
+    def query_df(self, query:str, dtype:dict={})->pd.DataFrame:
+        df = pd.read_sql_query(query, self._engine, dtype=dtype)
+        return df
 
     def query(self, query:str)->list:
         with self._engine.connect() as conn:
@@ -278,7 +280,7 @@ class Org:
     
     def getAllDistancierSessions(self)->list:
         # query
-        q = f"SELECT * FROM ggo_distancier_session"
+        q = "SELECT * FROM ggo_distancier_session"
         df = self.query_df(q)
         # Data
         sessions = []
