@@ -41,7 +41,7 @@ class GeolevelDataType:
         return self._org.getGeolevelById(self._geolevel_id)
     
     def getDataset(self)->pd.DataFrame:
-        query = text(f"SELECT * FROM ggo_geoleveldata WHERE custdata_type_id = {self.geolevel_data_type_id}")
+        query = text(f"SELECT * FROM ggo_geoleveldata WHERE custdata_type_id = {self._geolevel_data_type_id}")
         return pd.read_sql(query, self._org.engine)
     
     def getGeoDataset(self)->gpd.GeoDataFrame:
