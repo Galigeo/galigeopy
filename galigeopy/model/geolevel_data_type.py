@@ -53,7 +53,7 @@ class GeolevelDataType:
             FROM ggo_geoleveldata g
             JOIN {geolevel.table_name} AS geo ON geo.{geolevel.geounit_code} = g.geounit_code
             WHERE
-                custdata_type_id = {self.geolevel_data_type_id}
+                custdata_type_id = {self._geolevel_data_type_id}
         """)
         return gpd.read_postgis(query, self._org.engine, geom_col='geometry')
     
