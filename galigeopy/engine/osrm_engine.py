@@ -54,12 +54,20 @@ class OsrmEngine:
         url += f"&overview={overview}"
         url += f"&continue_straight={continue_straight}"
         response = requests.get(url, verify=self.verified_url)
-        if response.status_code != 200:
+        if response.status_code == 200:
+            data = response.json()
+            if data["code"] == "Ok":
+                return data["routes"]
+            else:
+                return []
+        elif response.status_code == 400:
+            data = response.json()
+            if data["code"] == "NoRoute":
+                return []
+            else:
+                raise Exception(f"Error {data['code']}: {data['message']}")
+        else:
             raise Exception(f"Error {response.status_code}: {response.text}")
-        data = response.json()
-        if data["code"] != "Ok":
-            raise Exception(f"Error {data['code']}: {data['message']}")
-        return data["routes"]
     
     def get_route_async(
         self,
@@ -105,7 +113,9 @@ class OsrmEngine:
             # return ret
         # Run
         data = asyncio.run(main(urls))
-        return [d['routes'] for d in [json.loads(d) for d in data]]
+        # Check if noRoute
+        json_data = [json.loads(d) for d in data]
+        return [d for d in json_data]
 
         
     
