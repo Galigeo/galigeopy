@@ -119,6 +119,17 @@ class DistancierSession:
         # Df
         return self._org.query_df(q)
     
+    def rename(self, new_name:str)->None:
+        self._name = new_name
+        q = f"UPDATE ggo_distancier_session SET name = '{new_name}' WHERE session_id = {self._session_id}"
+        self._org.query(q)
+        return None
+
+    def delete(self)->None:
+        q = f"DELETE FROM ggo_distancier_session WHERE session_id = {self._session_id}"
+        self._org.query(q)
+        return None
+    
     def to_json(self):
         return {
             "session_id": self._session_id,

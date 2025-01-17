@@ -1,4 +1,5 @@
 import pandas as pd
+import geopandas as gpd
 from sqlalchemy import text
 
 from galigeopy.model.zone import Zone
@@ -54,10 +55,10 @@ class ZoneType:
         
     def getAllZones(self):
         query = text(f"SELECT * FROM ggo_zone WHERE zone_type_id = {self.zone_type_id}")
-        df = pd.read_sql(query, self._org.engine)
+        gdf = gpd.read_postgis(query, self._org.engine, geom_col='geometry')
         zones = []
-        for i in range(len(df)):
-            data = df.iloc[i].to_dict()
+        for i in range(len(gdf)):
+            data = gdf.iloc[i].to_dict()
             data.update({"org": self._org})
             zones.append(Zone(**data))
         return zones
@@ -66,9 +67,11 @@ class ZoneType:
         # Add to database
         query = f"""
         INSERT INTO ggo_zone_type (
-            name
+            name,
+            description
         ) VALUES (
-            '{self.name.replace("'", "''")}'
+            '{self.name.replace("'", "''")}',
+            '{self.description.replace("'", "''")}'
         ) RETURNING zone_type_id;
         """
         zone_type_id = self._org.query(query)[0][0]

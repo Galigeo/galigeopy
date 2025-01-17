@@ -1,5 +1,7 @@
 import pandas as pd
 import geopandas as gpd
+from shapely.geometry import shape, mapping
+from shapely.geometry.base import BaseGeometry
 import json
 from sqlalchemy import text
 
@@ -16,6 +18,7 @@ class Zone:
         zone_type_id:int,
         poi_id:int,
         parent_zone_id:int,
+        geometry:BaseGeometry,
         org:'Org' # type: ignore
     ):
         # Infos
@@ -25,6 +28,7 @@ class Zone:
         self._zone_type_id = zone_type_id
         self._poi_id = poi_id
         self._parent_zone_id = parent_zone_id
+        self._geometry = geometry
         # Org
         self._org = org
 
@@ -41,6 +45,8 @@ class Zone:
     def poi_id(self): return self._poi_id
     @property
     def parent_zone_id(self): return self._parent_zone_id
+    @property
+    def geometry(self): return self._geometry
     @property
     def org(self): return self._org
 
@@ -100,20 +106,38 @@ class Zone:
         return zone_geounits
 
     def add_to_model(self) -> int:
+        if (self.zone_id is not None):
+            # Update database
+            geom_q = f"ST_GeomFromGeoJSON('{json.dumps(mapping(self.geometry))}')" if self.geometry is not None else 'NULL'
+            query = f"""
+            UPDATE ggo_zone SET
+                properties = '{json.dumps(self.properties).replace("'", "''")}',
+                geolevel_id = {self.geolevel_id if self.geolevel_id is not None else 'NULL'},
+                zone_type_id = {self.zone_type_id},
+                poi_id = {self.poi_id},
+                parent_zone_id = {self.parent_zone_id if self.parent_zone_id is not None else 'NULL'},
+                geometry = {geom_q}
+            WHERE zone_id = {self.zone_id} RETURNING zone_id;
+            """
+            zone_id = self._org.query(query)[0][0]
+            return zone_id
         # Add to database
+        geom_q = f"ST_GeomFromGeoJSON('{json.dumps(mapping(self.geometry))}')" if self.geometry is not None else 'NULL'
         query = f"""
         INSERT INTO ggo_zone (
             properties,
             geolevel_id,
             zone_type_id,
             poi_id,
-            parent_zone_id
+            parent_zone_id,
+            geometry
         ) VALUES (
             '{json.dumps(self.properties).replace("'", "''")}',
-            {self.geolevel_id},
+            {self.geolevel_id if self.geolevel_id is not None else 'NULL'},
             {self.zone_type_id},
             {self.poi_id},
-            {self.parent_zone_id if self.parent_zone_id is not None else 'NULL'}
+            {self.parent_zone_id if self.parent_zone_id is not None else 'NULL'},
+            {geom_q}
         ) RETURNING zone_id;
         """
         zone_id = self._org.query(query)[0][0]
