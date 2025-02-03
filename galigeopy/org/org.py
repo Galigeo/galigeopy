@@ -33,6 +33,8 @@ class Org:
     def is_valid(self): return self._is_valid
     @property
     def default_schema(self): return self._default_schema
+    @property
+    def name(self): return self._user.strip()
 
     # Private Methods
     def _get_engine(self) -> Engine:
@@ -147,7 +149,8 @@ class Org:
         
     def getZoneTypeByName(self, name:str)->ZoneType:
         # Query
-        query = f"SELECT * FROM ggo_zone_type WHERE name = '{name}'"
+        name_sql = name.replace("'", "''")
+        query = f"SELECT * FROM ggo_zone_type WHERE name = '{name_sql}'"
         # Get data from query
         df = pd.read_sql(query, self._engine)
         # Data

@@ -76,4 +76,21 @@ class ZoneType:
         """
         zone_type_id = self._org.query(query)[0][0]
         return zone_type_id
+    
+    def update(self, updated_zone_type: 'ZoneType') -> 'ZoneType':
+        query = f"""
+        UPDATE ggo_zone_type
+        SET
+            name = '{updated_zone_type.name.replace("'", "''")}',
+            description = '{updated_zone_type.description.replace("'", "''")}'
+        WHERE zone_type_id = {self.zone_type_id}
+        """
+        self._org.query(query)
+        return self._org.getZoneTypeById(self.zone_type_id)
+    
+    def delete(self)-> bool:
+        query = f"DELETE FROM ggo_zone_type WHERE zone_type_id = {self.zone_type_id}"
+        self._org.query(query)
+        self._zone_type_id = None
+        return True
 
