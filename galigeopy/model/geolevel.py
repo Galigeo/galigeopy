@@ -66,6 +66,11 @@ class Geolevel:
     @property
     def org(self): return self._org
 
+    @name.setter
+    def name(self, value): self._name = value
+    @description.setter
+    def description(self, value): self._description = value
+
     # Public Methods
     def getGeounitCodesList(self)->list:
         query = f"SELECT {self._geounit_code} FROM {self._table_name}"
@@ -228,3 +233,29 @@ class Geolevel:
         with self._org.engine.connect() as conn:
             result = conn.execute(query)
             return result.scalar()
+        
+    def update(self) -> 'Geolevel':
+        query = f"""
+        UPDATE ggo_geolevel
+        SET
+            name = '{self._name.replace("'", "''")}',
+            geounit_code = '{self._geounit_code}',
+            table_name = '{self._table_name}',
+            geom_field = '{self._geom_field}',
+            geom_centroid_field = {"'" + self._geom_centroid_field + "'" if self._geom_centroid_field is not None else 'NULL'},
+            country = '{self._country.replace("'", "''")}',
+            country_iso3 = '{self._country_iso3}',
+            level = '{self._level.replace("'", "''")}',
+            description = '{self._description.replace("'", "''")}',
+            properties = '{json.dumps(self._properties).replace("'", "''")}',
+            sociodemo = '{json.dumps(self._sociodemo).replace("'", "''")}'
+        WHERE geolevel_id = {self._geolevel_id}
+        """
+        self._org.query(query)
+        return self._org.getGeolevelById(self._geolevel_id)
+    
+    def delete(self)-> bool:
+        query = f"DELETE FROM ggo_geolevel WHERE geolevel_id = {self._geolevel_id}"
+        self._org.query(query)
+        self._geolevel_id = None
+        return True

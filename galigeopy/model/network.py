@@ -76,6 +76,14 @@ class Network:
         with self._org.engine.connect() as conn:
             result = conn.execute(query)
             return result.scalar()
+        
+    def getGeoDataFrame(self)->gpd.GeoDataFrame:
+        # Query
+        query = f"SELECT * FROM ggo_poi WHERE network_id = {self._network_id}"
+        # Get data from query
+        gdf = gpd.read_postgis(query, self._org.engine, geom_col="geom")
+        # return df
+        return gdf
 
     def getPoisList(self)->gpd.GeoDataFrame:
         # Query

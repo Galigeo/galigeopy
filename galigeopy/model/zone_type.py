@@ -22,7 +22,7 @@ class ZoneType:
     def __str__(self):
         return self.name + " (" + str(self.zone_type_id) + ")"
     
-    # Getters and setters
+    # Getters
     @property
     def zone_type_id(self): return self._zone_type_id
     @property
@@ -31,6 +31,12 @@ class ZoneType:
     def description(self): return self._description
     @property
     def org(self): return self._org
+
+    # Setters
+    @name.setter
+    def name(self, value): self._name = value
+    @description.setter
+    def description(self, value): self._description = value
     
     # Public Methods
     def number_of_zones(self):
@@ -77,12 +83,12 @@ class ZoneType:
         zone_type_id = self._org.query(query)[0][0]
         return zone_type_id
     
-    def update(self, updated_zone_type: 'ZoneType') -> 'ZoneType':
+    def update(self) -> 'ZoneType':
         query = f"""
         UPDATE ggo_zone_type
         SET
-            name = '{updated_zone_type.name.replace("'", "''")}',
-            description = '{updated_zone_type.description.replace("'", "''")}'
+            name = '{self.name.replace("'", "''")}',
+            description = '{self.description.replace("'", "''")}'
         WHERE zone_type_id = {self.zone_type_id}
         """
         self._org.query(query)
