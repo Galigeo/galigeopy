@@ -114,11 +114,18 @@ class Zone:
         if len(gdf) > 0:
             return gdf
         else:
-            geounits = self.getAllZoneGeounits()
-            geounits_code_list = [g.geounit_code for g in geounits]
-            geounits_code_list_str = ','.join([f"'{str(g)}'" for g in geounits_code_list])
             geolevel = self.getGeolevel()
-            q = f"SELECT * FROM {geolevel.table_name} WHERE {geolevel.geounit_code} IN ({geounits_code_list_str})"
+            q = f"""
+                SELECT
+                    g.{geolevel.geounit_code} AS geounit_code,
+                    z.properties AS zone_properties,
+                    zg.properties AS zone_geounit_properties,
+                    g.{geolevel.geom_field} AS geometry
+                FROM ggo_zone z
+                JOIN ggo_zone_geounit zg ON zg.zone_id = z.zone_id
+                JOIN {geolevel.table_name} g ON g.{geolevel.geounit_code} = zg.geounit_code
+                WHERE z.zone_id = {self.zone_id}
+            """
             gdf = gpd.read_postgis(q, self._org.engine, geom_col=geolevel.geom_field)
             return gdf
 
