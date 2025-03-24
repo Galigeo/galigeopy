@@ -113,9 +113,9 @@ class Org:
             networks.append(Network(**data))
         return networks
     
-    def getPoisByCode(self, code:str)->list:
+    def getPoisByCode(self, code:str, networks_ids:list=[])->list:
         # Query
-        query = f"SELECT * FROM ggo_poi WHERE id = '{code}'"
+        query = f"SELECT * FROM ggo_poi WHERE id = '{code}'" if len(networks_ids) == 0 else f"SELECT * FROM ggo_poi WHERE id = '{code}' AND network_id IN ({','.join([str(i) for i in networks_ids])})"
         # Get data from query
         gdf = gpd.read_postgis(query, self._engine, geom_col="geom")
         # Data

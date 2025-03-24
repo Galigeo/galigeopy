@@ -104,6 +104,23 @@ class Zone:
             data.update({"org": self._org})
             zone_geounits.append(ZoneGeounit(**data))
         return zone_geounits
+    
+    def getGeolevel(self):
+        return self._org.getGeolevelById(self.geolevel_id)
+    
+    def getGeoDataFrame(self)->gpd.GeoDataFrame:
+        query = f"SELECT * FROM ggo_zone WHERE zone_id = {self.zone_id} AND geometry IS NOT NULL"
+        gdf = gpd.read_postgis(query, self._org.engine, geom_col='geometry')
+        if len(gdf) > 0:
+            return gdf
+        else:
+            geounits = self.getAllZoneGeounits()
+            geounits_code_list = [g.geounit_code for g in geounits]
+            geounits_code_list_str = ','.join([f"'{str(g)}'" for g in geounits_code_list])
+            geolevel = self.getGeolevel()
+            q = f"SELECT * FROM {geolevel.table_name} WHERE {geolevel.geounit_code} IN ({geounits_code_list_str})"
+            gdf = gpd.read_postgis(q, self._org.engine, geom_col=geolevel.geom_field)
+            return gdf
 
     def add_to_model(self) -> int:
         if (self.zone_id is not None):

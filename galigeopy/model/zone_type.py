@@ -3,6 +3,7 @@ import geopandas as gpd
 from sqlalchemy import text
 
 from galigeopy.model.zone import Zone
+from galigeopy.model.poi import Poi
 
 class ZoneType:
     def __init__(
@@ -59,6 +60,12 @@ class ZoneType:
         else:
             raise Warning(f"Zone {zone_id} not found in ZoneType {self.name}")
         
+    def getZonesByPoi(self, poi : Poi):
+        query = text(f"SELECT * FROM ggo_zone WHERE poi_id = {poi.poi_id} AND zone_type_id = {self.zone_type_id}")
+        r = pd.read_sql(query, self._org.engine)
+        zones = [Zone(**data, org=self._org) for data in r.to_dict(orient='records')]
+        return zones
+        
     def getAllZones(self):
         query = text(f"SELECT * FROM ggo_zone WHERE zone_type_id = {self.zone_type_id}")
         gdf = gpd.read_postgis(query, self._org.engine, geom_col='geometry')
@@ -68,6 +75,14 @@ class ZoneType:
             data.update({"org": self._org})
             zones.append(Zone(**data))
         return zones
+    
+    def getAllPois(self) -> list:
+        query = text(f"SELECT DISTINCT p.* FROM ggo_poi AS p JOIN ggo_zone AS z ON p.poi_id = z.poi_id WHERE z.zone_type_id = {self.zone_type_id} ORDER BY p.poi_id")
+        gdf = gpd.read_postgis(query, self._org.engine, geom_col='geom')
+        print(gdf.head())
+        pois = [Poi(**data, org=self._org) for data in gdf.to_dict(orient='records')]
+        # pois = list(set(pois))
+        return pois
         
     def add_to_model(self)-> int:
         # Add to database
