@@ -53,6 +53,10 @@ class Org:
             return False
     
     # Public Methods
+    def query_gdf(self, query:str, geometric_column:str="geometry", crs:str="EPSG:4326")->gpd.GeoDataFrame:
+        gdf = gpd.read_postgis(query, self._engine, geom_col=geometric_column, crs=crs)
+        return gdf
+
     def query_df(self, query:str, dtype:dict={})->pd.DataFrame:
         df = pd.read_sql_query(query, self._engine, dtype=dtype)
         return df
