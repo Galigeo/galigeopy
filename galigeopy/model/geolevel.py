@@ -20,6 +20,7 @@ class Geolevel:
             description:str,
             properties:str,
             sociodemo:dict,
+            datahub_layer: str,
             org:'Org' # type: ignore
     ):
         # Infos
@@ -35,6 +36,7 @@ class Geolevel:
         self._description = description
         self._properties = properties
         self._sociodemo = sociodemo
+        self._datahub_layer = datahub_layer
         # Engine
         self._org = org
 
