@@ -235,7 +235,7 @@ class Org:
     
     def getGeolevelDataTypeById(self, id:int)->GeolevelDataType:
         # Query
-        query = f"SELECT * FROM ggo_geoleveldata_type WHERE custdata_type_id = {str(id)}"
+        query = f"SELECT * FROM ggo_geoleveldata_type WHERE geoleveldata_type_id = {str(id)}"
         # Get data from query
         df = pd.read_sql(query, self._engine)
         # Data
@@ -258,6 +258,19 @@ class Org:
             return GeolevelDataType(**data)
         else:
             raise Warning(f"GeolevelDataType with name {name} not found")
+
+    def getAllGeolevelDataTypes(self)->list:
+        # Query
+        query = "SELECT * FROM ggo_geoleveldata_type"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        geolevel_data_types = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self})
+            geolevel_data_types.append(GeolevelDataType(**data))
+        return geolevel_data_types
         
     def getDistancierSessionList(self)->pd.DataFrame:
         # Query

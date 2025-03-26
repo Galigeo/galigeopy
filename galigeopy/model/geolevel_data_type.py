@@ -8,14 +8,14 @@ class GeolevelDataType:
     # Constructor
     def __init__(
             self,
-            geolevel_data_type:int,
+            geoleveldata_type_id:int,
             name:str,
             properties:dict,
             geolevel_id:int,
             description:str,
             org:'Org' # type: ignore
     ):
-        self._geoleveldata_type_id = geolevel_data_type
+        self._geoleveldata_type_id = geoleveldata_type_id
         self._name = name
         self._properties = properties
         self._geolevel_id = geolevel_id
@@ -35,6 +35,12 @@ class GeolevelDataType:
     def description(self): return self._description
     @property
     def org(self): return self._org
+
+    # Setters
+    @name.setter
+    def name(self, value): self._name = value
+    @description.setter
+    def description(self, value): self._description = value
 
     # Public Methods
     def getGeolevel(self):
@@ -76,3 +82,22 @@ class GeolevelDataType:
         self._geoleveldata_type_id = geolevel_data_type_id
         # return
         return self
+    
+    def update(self) -> 'GeolevelDataType':
+        query = f"""
+            UPDATE ggo_geoleveldata_type
+            SET
+                name = '{self._name.replace("'", "''")}',
+                description = '{self._description.replace("'", "''")}',
+                properties = '{json.dumps(self._properties).replace("'", "''")}',
+                geolevel_id = {self._geolevel_id}
+            WHERE geoleveldata_type_id = {self._geoleveldata_type_id}
+        """
+        self._org.query(query)
+        return self
+    
+    def delete(self):
+        query = f"DELETE FROM ggo_geoleveldata_type WHERE geoleveldata_type_id = {self._geoleveldata_type_id}"
+        self._org.query(query)
+        self._geoleveldata_type_id = None
+        return True
