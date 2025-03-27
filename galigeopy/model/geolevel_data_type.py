@@ -50,11 +50,20 @@ class GeolevelDataType:
         query = text(f"SELECT * FROM ggo_geoleveldata WHERE geoleveldata_type_id = {self._geoleveldata_type_id}")
         return pd.read_sql(query, self._org.engine)
     
-    def getGeoDataset(self)->gpd.GeoDataFrame:
+    def getGeoDataset(self, columns=None)->gpd.GeoDataFrame:
         geolevel = self.getGeolevel()
+        df_columns = pd.DataFrame(self._properties["columns"])
+        if columns is not None:
+            df_columns = df_columns[df_columns["colonne"].isin(columns)]
+        p = []
+        for index, row in df_columns.iterrows():
+            p.append(f"(g.properties->>'{row['colonne']}')::{row['type']} AS {row['colonne']}")
+        properties = ", ".join(p)
+        properties = properties + "," if properties != "" else ""
         query = text(f"""
             SELECT
-                g.*,
+                g.geounit_code,
+                {properties}
                 geo.{geolevel.geom_field} AS geometry
             FROM ggo_geoleveldata g
             JOIN {geolevel.table_name} AS geo ON geo.{geolevel.geounit_code} = g.geounit_code
