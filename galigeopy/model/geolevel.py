@@ -261,3 +261,16 @@ class Geolevel:
         self._org.query(query)
         self._geolevel_id = None
         return True
+    
+    @staticmethod
+    def getAllGeolevelOfZoneType(zone_type):
+        q = f"""
+        SELECT
+            DISTINCT g.*
+        FROM ggo_zone AS z
+        JOIN ggo_geolevel AS g ON z.geolevel_id = g.geolevel_id
+        WHERE z.zone_type_id = {zone_type.zone_type_id}
+        """
+        org = zone_type.org
+        df = org.query_df(q)
+        return [Geolevel(**row, org=org) for index, row in df.iterrows()]

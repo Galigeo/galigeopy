@@ -4,6 +4,7 @@ from sqlalchemy import text
 
 from .geolevel import Geolevel
 from .network import Network
+from .properties.property import Property
 
 class DistancierSession:
     # Constructor
@@ -169,3 +170,21 @@ class DistancierSession:
             df = self._org.query_df(q)
             geounit_code_list += df['geounit_code_end'].tolist()
         return geounit_code_list
+    
+    def getProperties(self)->list[Property]:
+        return [
+            Property(column='time', json_info=None, dtype='INT'),
+            Property(column='distance', json_info=None, dtype='FLOAT'),
+        ]
+    
+    @staticmethod
+    def getAllDistancierSessionsOfNetwork(network:Network)-> list:
+        q = f"""
+        SELECT
+            DISTINCT ds.*
+        FROM ggo_distancier_session AS ds
+        WHERE ds.network_id_start = {network.network_id} OR ds.network_id_end = {network.network_id}        
+        """
+        org = network.org
+        df = org.query_df(q)
+        return [DistancierSession(**row, org=org) for index, row in df.iterrows()]

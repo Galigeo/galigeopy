@@ -3,7 +3,9 @@ import geopandas as gpd
 from shapely import wkt
 from sqlalchemy import text
 
-from galigeopy.model.poi import Poi
+from .poi import Poi
+from .properties.property import Property
+from ..utils.types import pythonTypeToPostgresType
 
 class Network:
     # Constructor
@@ -117,16 +119,38 @@ class Network:
             pois.append(Poi(**data))
         return pois
     
-    def getNetworkProperties(self)->pd.DataFrame:
+    def getProperties(self, fast:int|None=None)->pd.DataFrame:
+        # Basic properties
+        brand_property = Property(column="brand", json_info=None, dtype="TEXT")
+        # Other properties
+        query = f"""
+            SELECT
+                p.properties
+            FROM ggo_poi AS p
+            WHERE p.network_id = {self._network_id}
+        """
+        query += f""" LIMIT {fast}""" if fast else ""
+        list_properties = self._org.query_df(query)['properties'].tolist()
+        df_properties = pd.DataFrame(list_properties)
+        df_prop = df_properties.dtypes.reset_index()
+        df_prop.columns = ['columns', 'dtypes']
+        df_prop['dtypes_postgres'] = df_prop['dtypes'].astype(str).apply(lambda x: pythonTypeToPostgresType(x))
+        p = [brand_property]
+        for index, row in df_prop.iterrows():
+            prop = Property(column='properties', dtype='JSONB', json_info={"key": row['columns'], "dtype": row['dtypes_postgres']})
+            p.append(prop)
+        return p
+    
+    def getAllNetworksFromZoneType(zone_type):
         # Query
-        query = f"SELECT properties FROM ggo_poi WHERE network_id = {self._network_id}"
-        list_prop = pd.read_sql(query, self._org.engine)["properties"].to_list()
-        df_properties = pd.DataFrame(list_prop, dtype='str')
-        # Auto detect dtypes
-        for col in df_properties.columns:
-            df_properties[col] = pd.to_numeric(df_properties[col], errors='ignore')
-        df_prop = pd.DataFrame()
-        df_prop["columns"] = df_properties.columns
-        df_prop["dtypes"] = df_properties.dtypes
-        return df_prop
-        
+        query = f"""
+            SELECT
+                DISTINCT n.*
+            FROM ggo_zone AS z
+            JOIN ggo_poi AS p ON p.poi_id = z.poi_id
+            JOIN ggo_network AS n ON n.network_id = p.network_id
+            WHERE z.zone_type_id = {zone_type.zone_type_id}
+        """
+        org = zone_type.org
+        df = org.query_df(query)
+        return [Network(**data, org=org) for data in df.to_dict(orient='records')]

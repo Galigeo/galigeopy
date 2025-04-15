@@ -4,6 +4,8 @@ from sqlalchemy import text
 
 from galigeopy.model.zone import Zone
 from galigeopy.model.poi import Poi
+from galigeopy.utils.types import pythonTypeToPostgresType
+from galigeopy.model.properties.property import Property
 
 class ZoneType:
     def __init__(
@@ -115,3 +117,60 @@ class ZoneType:
         self._zone_type_id = None
         return True
 
+    def getZonesProperties(self, fast:int|None=None)-> list[Property]:
+        # Other properties
+        query = f"""
+        SELECT
+            z.properties
+        FROM ggo_zone AS z
+        WHERE z.zone_type_id = {self.zone_type_id};
+        """
+        query += f" LIMIT {fast}" if fast else ""
+        list_properties = self._org.query_df(query)['properties'].tolist()
+        df_properties = pd.DataFrame(list_properties)
+        df_prop = df_properties.dtypes.reset_index()
+        df_prop.columns = ['columns', 'dtypes']
+        df_prop['dtypes_postgres'] = df_prop['dtypes'].astype(str).apply(lambda x: pythonTypeToPostgresType(x))
+        p = []
+        for index, row in df_prop.iterrows():
+            prop = Property(column='properties', dtype='JSONB', json_info={"key": row['columns'], "dtype": row['dtypes_postgres']})
+            p.append(prop)
+        return p
+    
+    def getZonesGeounitsProperties(self, fast:int|None=None)-> list[Property]:
+        query = f"""
+        SELECT
+            zg.properties
+        FROM ggo_zone_geounit AS zg
+        JOIN ggo_zone AS z ON z.zone_id = zg.zone_id
+        WHERE z.zone_type_id = {self.zone_type_id};
+        """
+        query += f" LIMIT {fast}" if fast else ""
+        list_properties = self._org.query_df(query)['properties'].tolist()
+        df_properties = pd.DataFrame(list_properties)
+        df_prop = df_properties.dtypes.reset_index()
+        df_prop.columns = ['columns', 'dtypes']
+        df_prop['dtypes_postgres'] = df_prop['dtypes'].astype(str).apply(lambda x: pythonTypeToPostgresType(x))
+        p = []
+        for index, row in df_prop.iterrows():
+            prop = Property(column='properties', dtype='JSONB', json_info={"key": row['columns'], "dtype": row['dtypes_postgres']})
+            p.append(prop)
+        return p
+    
+    def getProperties(self, fast:int|None=None)-> list[Property]:
+        return self.getZonesProperties(fast=fast) + self.getZonesGeounitsProperties(fast=fast)
+    
+    @staticmethod
+    def getAllZoneTypesOfNetwork(network):
+        query = f"""
+        SELECT
+            DISTINCT zt.*
+        FROM ggo_poi AS p
+        JOIN ggo_zone AS z ON p.poi_id = z.poi_id
+        JOIN ggo_zone_type AS zt ON z.zone_type_id = zt.zone_type_id
+        WHERE p.network_id = {network.network_id}
+        """
+        org = network.org
+        df = org.query_df(query)
+        zone_types = [ZoneType(**data, org=org) for data in df.to_dict(orient='records')]
+        return zone_types

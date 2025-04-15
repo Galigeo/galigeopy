@@ -10,6 +10,7 @@ from galigeopy.model.zone_type import ZoneType
 from galigeopy.model.geolevel import Geolevel
 from galigeopy.model.geolevel_data_type import GeolevelDataType
 from galigeopy.model.distancier_session import DistancierSession
+from galigeopy.model.cluster_session import ClusterSession
 
 class Org:
     # Constructor
@@ -281,7 +282,7 @@ class Org:
     def getDistancierSessionById(self, session_id:int)->DistancierSession:
         # Query
         q = f"SELECT * FROM ggo_distancier_session WHERE session_id = {session_id}"
-        df = self._org.query_df(q)
+        df = self.query_df(q)
         if len(df) != 1:
             raise Warning(f"DistancierSession with id {session_id} doesn't exist")
         data = df.iloc[0].to_dict()
@@ -310,6 +311,19 @@ class Org:
             s = DistancierSession(**data)
             sessions.append(s)
         return sessions
+
+    def getAllClusterSessions(self)->list:
+        # Query
+        query = "SELECT * FROM ggo_cluster_session"
+        # Get data from query
+        df = pd.read_sql(query, self._engine)
+        # Data
+        cluster_types = []
+        for i in range(len(df)):
+            data = df.iloc[i].to_dict()
+            data.update({"org": self})
+            cluster_types.append(ClusterSession(**data))
+        return cluster_types
 
 
     

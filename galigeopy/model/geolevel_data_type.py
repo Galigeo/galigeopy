@@ -3,6 +3,8 @@ import geopandas as gpd
 import json
 
 from sqlalchemy import text
+from galigeopy.model.properties.property import Property
+from galigeopy.utils.types import pythonTypeToPostgresType
 
 class GeolevelDataType:
     # Constructor
@@ -110,3 +112,35 @@ class GeolevelDataType:
         self._org.query(query)
         self._geoleveldata_type_id = None
         return True
+
+    def getProperties(self, fast:int|None=None)->list[Property]:
+        query = f"""
+            SELECT
+                gd.properties
+            FROM ggo_geoleveldata AS gd
+            WHERE gd.geoleveldata_type_id = {self._geoleveldata_type_id}
+        """
+        query += f" LIMIT {fast}" if fast is not None else ""
+        list_properties = self._org.query_df(query)['properties'].tolist()
+        df_properties = pd.DataFrame(list_properties)
+        df_prop = df_properties.dtypes.reset_index()
+        df_prop.columns = ['columns', 'dtypes']
+        df_prop['dtypes_postgres'] = df_prop['dtypes'].astype(str).apply(lambda x: pythonTypeToPostgresType(x))
+        p = []
+        for index, row in df_prop.iterrows():
+            prop = Property(column='properties', dtype='JSONB', json_info={"key": row['columns'], "dtype": row['dtypes_postgres']})
+            p.append(prop)
+        return p
+
+    
+    @staticmethod
+    def getAllGeolevelDataTypesOfGeolevel(geolevel):
+        q = f"""
+            SELECT
+                DISTINCT gdt.*
+            FROM ggo_geoleveldata_type AS gdt
+            WHERE gdt.geolevel_id = {geolevel.geolevel_id}
+        """
+        org = geolevel.org
+        df = geolevel.org.query_df(q)
+        return [GeolevelDataType(**row, org=org) for row in df.to_dict(orient="records")]
