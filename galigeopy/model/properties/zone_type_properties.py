@@ -1,5 +1,6 @@
 from .property import Property
 from ..zone_type import ZoneType
+import sqlparse
 
 class ZoneTypeProperties:
     def __init__(
@@ -35,6 +36,9 @@ class ZoneTypeProperties:
         for gp in self._geolevel_properties:
             geolevel_properties += gp.properties
         return self._basic_zone_properties + self._basic_zone_geounit_properties + network_properties + geolevel_properties
+    
+    def nb_properties(self):
+        return len(self._basic_zone_properties) + len(self._basic_zone_geounit_properties) + sum([np.nb_properties() for np in self._network_properties]) + sum([gp.nb_properties() for gp in self._geolevel_properties])
 
     def sql_basic_zone_properties(self):
         list_sql = []
@@ -52,5 +56,48 @@ class ZoneTypeProperties:
             list_sql.append(f"{prop.to_sql(prefix='zg')}")
         return ", ".join(list_sql)
     
-    def to_sql(self):
-        return ""
+    def properties_sql(self):
+        properties = []
+        for prop in self._basic_zone_properties:
+            properties.append(prop.to_sql(prefix="z"))
+        for prop in self._basic_zone_geounit_properties:
+            properties.append(prop.to_sql(prefix="zg"))
+        for np in self._network_properties:
+            properties += np.properties_sql()
+        for gp in self._geolevel_properties:
+            properties += gp.properties_sql()
+        return properties
+    
+    def join_sql(self, label=False):
+        join = ["JOIN ggo_zone_geounit AS zg ON zg.zone_id = z.zone_id"]
+        join += ["JOIN ggo_poi AS p ON p.poi_id = z.poi_id"] if label else []
+        for np in self._network_properties:
+            join += ["JOIN ggo_poi AS p ON p.poi_id = z.poi_id"] if not label else []
+            join += np.join_sql()
+        for gp in self._geolevel_properties:
+            join += ["JOIN ggo_geolevel AS g ON g.geolevel_id = z.geolevel_id"]
+            join += gp.join_sql()
+        return join
+
+    def where_sql(self):
+        where = [f"z.zone_type_id = {self._zone_type.zone_type_id}"]
+        for np in self._network_properties:
+            where += np.where_sql()
+        for gp in self._geolevel_properties:
+            where += gp.where_sql()
+        return where
+    
+    def to_sql(self, z_idx=True, zg_idx=True, code=False, label=False):
+        properties = [f"z.zone_id AS zone_id"] if z_idx else []
+        properties += [f"zg.zone_geounit_id AS zone_geounit_id"] if zg_idx else []
+        properties += [f"p.name AS poi_name"] if label else []
+        properties += [f"zg.geounit_code AS geounit_code"] if code else []
+        properties += self.properties_sql()
+        q = f"""
+        SELECT
+            {', '.join(properties)}
+        FROM ggo_zone AS z
+        {' '.join(self.join_sql(label=label))}
+        WHERE {" AND ".join(self.where_sql())}
+        """
+        return sqlparse.format(q, reindent=True, keyword_case='upper')

@@ -37,7 +37,7 @@ class Property:
         if self._json_info:
             json_key = self._json_info["key"]
             json_dtype = self._json_info.get("dtype", "text")
-            col_ref = f"({col_ref} -> '{json_key}')::{json_dtype}"
+            col_ref = f"({col_ref} ->> '{json_key}')::{json_dtype}"
 
         # Apply aggregation function if specified
         if self._agg_function:
@@ -56,3 +56,6 @@ class Property:
     
     def getDefaultAggFunction(self):
         return "SUM"
+    
+    def getAllAggFunctions(self):
+        return ["SUM", "AVG", "COUNT", "MIN", "MAX"]

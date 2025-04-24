@@ -13,6 +13,9 @@ class GeoleveldataTypeProperties:
     @property
     def properties(self): return self._geoleveldata_properties
 
+    def nb_properties(self):
+        return len(self._geoleveldata_properties)
+
     def sql_geoleveldata_properties(self):
         list_sql = []
         if len(self._geoleveldata_properties) == 0:
@@ -21,11 +24,19 @@ class GeoleveldataTypeProperties:
             list_sql.append(f"{prop.to_sql(prefix='gd')}")
         return ", ".join(list_sql)
     
+    def properties_sql(self):
+        properties = []
+        for prop in self._geoleveldata_properties:
+            properties.append(prop.to_sql(prefix="gd"))
+        return properties
+    
+    def join_sql(self):
+        join = []
+        return join
+    
+    def where_sql(self):
+        where = [f"gd.geoleveldata_type_id = {self._geoleveldata_type.geoleveldata_type_id}"]
+        return where
+    
     def to_sql(self):
-        q = f"""
-        SELECT
-            {self.sql_geoleveldata_properties()}
-        FROM ggo_geoleveldata AS gd
-        WHERE gd.geoleveldata_type_id = {self._geoleveldata_type.geoleveldata_type_id}
-        """
-        return q
+        return ""

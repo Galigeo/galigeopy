@@ -81,7 +81,6 @@ class ZoneType:
     def getAllPois(self) -> list:
         query = text(f"SELECT DISTINCT p.* FROM ggo_poi AS p JOIN ggo_zone AS z ON p.poi_id = z.poi_id WHERE z.zone_type_id = {self.zone_type_id} ORDER BY p.poi_id")
         gdf = gpd.read_postgis(query, self._org.engine, geom_col='geom')
-        print(gdf.head())
         pois = [Poi(**data, org=self._org) for data in gdf.to_dict(orient='records')]
         # pois = list(set(pois))
         return pois

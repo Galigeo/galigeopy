@@ -121,7 +121,7 @@ class Network:
     
     def getProperties(self, fast:int|None=None)->pd.DataFrame:
         # Basic properties
-        brand_property = Property(column="brand", json_info=None, dtype="TEXT")
+        # brand_property = Property(column="brand", json_info=None, dtype="TEXT")
         # Other properties
         query = f"""
             SELECT
@@ -135,12 +135,13 @@ class Network:
         df_prop = df_properties.dtypes.reset_index()
         df_prop.columns = ['columns', 'dtypes']
         df_prop['dtypes_postgres'] = df_prop['dtypes'].astype(str).apply(lambda x: pythonTypeToPostgresType(x))
-        p = [brand_property]
+        p = []
         for index, row in df_prop.iterrows():
             prop = Property(column='properties', dtype='JSONB', json_info={"key": row['columns'], "dtype": row['dtypes_postgres']})
             p.append(prop)
         return p
     
+    @staticmethod
     def getAllNetworksFromZoneType(zone_type):
         # Query
         query = f"""

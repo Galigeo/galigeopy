@@ -90,6 +90,10 @@ class DistancierSession:
     # Magic Method
     def __str__(self) -> str:
         return f"DistancierSession({self._session_id} - {self._name})"
+
+    def get_number_of_distances(self)->int:
+        q = f"SELECT COUNT(*) FROM ggo_distancier WHERE session_id = {self._session_id}"
+        return self._org.query(q)[0][0]
     
     # Public Methods
     def getStartingType(self)->str:
