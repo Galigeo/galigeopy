@@ -1,6 +1,7 @@
 import pandas as pd
 import geopandas as gpd
 from sqlalchemy import text
+import json
 
 from galigeopy.model.zone import Zone
 from galigeopy.model.poi import Poi
@@ -50,11 +51,14 @@ class ZoneType:
         
     def getZonesList(self):
         query = text(f"SELECT * FROM ggo_zone WHERE zone_type_id = {self.zone_type_id}")
-        return pd.read_sql(query, self._org.engine)
-    
+        df = self._org.query_df(query)
+        # Properties to json
+        df['properties'] = df['properties'].apply(lambda x: json.loads(x) if isinstance(x, str) else x)
+        return df
+
     def getZoneById(self, zone_id:int):
         query = f"SELECT * FROM ggo_zone WHERE zone_id = {zone_id} AND zone_type_id = {self.zone_type_id}"
-        df = pd.read_sql(query, self._org.engine)
+        df = self._org.query_df(query)
         if len(df) > 0:
             data = df.iloc[0].to_dict()
             data.update({"org": self._org})
