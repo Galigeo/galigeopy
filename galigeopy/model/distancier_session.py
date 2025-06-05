@@ -87,6 +87,10 @@ class DistancierSession:
     @property
     def org(self): return self._org
 
+    @engine.setter
+    def engine(self, value:str):
+        self._engine = value
+
     # Magic Method
     def __str__(self) -> str:
         return f"DistancierSession({self._session_id} - {self._name})"
@@ -96,6 +100,15 @@ class DistancierSession:
         return self._org.query(q)[0][0]
     
     # Public Methods
+    def getStruct(self)->dict:
+        return {
+            'type_start': self.getStartingType(),
+            'type_end': self.getEndingType(),
+            'id_start': self._network_id_start if self._network_id_start else self._geolevel_id_start,
+            'id_end': self._network_id_end if self._network_id_end else self._geolevel_id_end,
+            'direction': self._direction,
+        }
+
     def getStartingType(self)->str:
         if self._network_id_start:
             return 'network'
@@ -134,7 +147,30 @@ class DistancierSession:
         q = f"DELETE FROM ggo_distancier_session WHERE session_id = {self._session_id}"
         self._org.query(q)
         return None
-    
+
+    def create(self)->None:
+        q = f"""
+        INSERT INTO ggo_distancier_session (name, engine, geolevel_id_start, geolevel_id_end, network_id_start, network_id_end, direction, max_distance, max_time, max_calc_out, no_route)
+        VALUES (
+            '{self._name}',
+            '{self._engine}',
+            {self._geolevel_id_start if self._geolevel_id_start else 'NULL'},
+            {self._geolevel_id_end if self._geolevel_id_end else 'NULL'},
+            {self._network_id_start if self._network_id_start else 'NULL'},
+            {self._network_id_end if self._network_id_end else 'NULL'},
+            '{self._direction}',
+            {self._max_distance if self._max_distance else 'NULL'},
+            {self._max_time if self._max_time else 'NULL'},
+            {self._max_calc_out if self._max_calc_out else 'NULL'},
+            {self._no_route}
+        ) RETURNING session_id;
+        """
+        result = self._org.query(q)
+        if result:
+            self._session_id = result[0][0]
+        return self._session_id
+
+        
     def to_json(self):
         return {
             "session_id": self._session_id,
